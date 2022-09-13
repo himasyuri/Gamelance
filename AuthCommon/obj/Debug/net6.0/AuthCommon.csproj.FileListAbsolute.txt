@@ -1,0 +1,12 @@
+D:\Projects\Gamelance\AuthCommon\bin\Debug\net6.0\AuthCommon.deps.json
+D:\Projects\Gamelance\AuthCommon\bin\Debug\net6.0\AuthCommon.dll
+D:\Projects\Gamelance\AuthCommon\bin\Debug\net6.0\AuthCommon.pdb
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.csproj.AssemblyReference.cache
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.AssemblyInfoInputs.cache
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.AssemblyInfo.cs
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.csproj.CoreCompileInputs.cache
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.dll
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\refint\AuthCommon.dll
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\AuthCommon.pdb
+D:\Projects\Gamelance\AuthCommon\obj\Debug\net6.0\ref\AuthCommon.dll
