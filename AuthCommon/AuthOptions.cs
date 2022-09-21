@@ -10,7 +10,9 @@ namespace AuthCommon
         public string Audience { get; set; }
         public string Secret { get; set; }
 
-        public int TokenLifeTime { get; set; }
+        public int AccessTokenLifeTime { get; set; }
+
+        public int RefreshTokenLifeTime { get; set; }
 
         public SymmetricSecurityKey GetSymmetricSecurityKey()
         {
