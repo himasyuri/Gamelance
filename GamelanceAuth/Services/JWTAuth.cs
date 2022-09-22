@@ -1,7 +1,6 @@
 ﻿using AuthCommon;
 using GamelanceAuth.Data;
 using GamelanceAuth.Models;
-using System.Linq;
 using GamelanceAuth.Models.Responses;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -20,7 +19,7 @@ namespace GamelanceAuth.Services
         public JWTAuth(IOptions<AuthOptions> authOptions, IRoleManager roleManager, DataContext context)
         {
             _authOptions = authOptions;
-            _roleManager =  roleManager;
+            _roleManager = roleManager;
             _context = context;
         }
 
@@ -99,7 +98,7 @@ namespace GamelanceAuth.Services
             await _context.SaveChangesAsync();
         }
 
-            private RefreshToken CreateRefreshToken(string device, string location)
+        private RefreshToken CreateRefreshToken(string device, string location)
         {
             var authParams = _authOptions.Value;
 
@@ -177,5 +176,5 @@ namespace GamelanceAuth.Services
             p.IsActive == false && p.IsExpired == true);
         }
     }
-    
+
 }
