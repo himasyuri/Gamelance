@@ -42,9 +42,12 @@ namespace GamelanceAuth.Controllers
 
         [Route("Update")]
         [HttpPost]
-        public async Task<IActionResult> RefreshTokens(string device, string IpAddress)
+        public async Task<IActionResult> RefreshTokens(string device)
         {
-            var refreshToken = Request.Cookies["refreshToken"];
+            //Test data
+            //TODO: compute ipaddress and location may be
+            string IpAddress = "123.23";
+            var refreshToken = HttpContext.Request.Cookies["refreshToken"];
             var token = await _jwt.UpdateTokens(refreshToken, device, IpAddress);
             SetTokenCokkie(token.RefreshToken);
 
@@ -55,7 +58,7 @@ namespace GamelanceAuth.Controllers
         [HttpPost]
         public IActionResult Logout()
         {
-            var refreshToken = Request.Cookies["refreshToken"];
+            var refreshToken = HttpContext.Request.Cookies["refreshToken"];
             _jwt.RevokeToken(refreshToken);
 
             return Ok();

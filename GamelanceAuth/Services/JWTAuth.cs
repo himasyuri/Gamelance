@@ -54,7 +54,7 @@ namespace GamelanceAuth.Services
         {
 
             User user = await GetUserByRefreshToken(token);
-            var refreshToken = user.RefreshTokens.SingleOrDefault(t => t.Token == token);
+            var refreshToken = _context.RefreshTokens.SingleOrDefault(t => t.Token == token);
 
             //TODO: situation if token was compromissed
             //if token was compromissed
@@ -70,7 +70,8 @@ namespace GamelanceAuth.Services
 
             var newRefreshToken = RotateRefreshToken(refreshToken);
 
-            user.RefreshTokens.Add(newRefreshToken);
+            newRefreshToken.User = user;
+            _context.RefreshTokens.Add(newRefreshToken);
             RemoveOldRefreshTokens(user);
 
             _context.Update(user);
@@ -80,22 +81,22 @@ namespace GamelanceAuth.Services
 
             TokensResponse response = new TokensResponse
             {
-                RefreshToken = refreshToken.Token,
+                RefreshToken = newRefreshToken.Token,
                 AccessToken = accessToken,
             };
 
             return response;
         }
 
-        public async void RevokeToken(string token)
+        public void RevokeToken(string token)
         {
-            User user = await GetUserByRefreshToken(token);
-            var refreshToken = user.RefreshTokens.SingleOrDefault(t => t.Token == token);
+            User user = GetUserByRefreshToken(token).Result;
+            var refreshToken = _context.RefreshTokens.SingleOrDefault(t => t.Token == token);
 
-            user.RefreshTokens.Remove(refreshToken);
+            _context.RefreshTokens.Remove(refreshToken);
 
             _context.Update(user);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         private RefreshToken CreateRefreshToken(string device, string location)
@@ -153,7 +154,7 @@ namespace GamelanceAuth.Services
         private async Task<User> GetUserByRefreshToken(string token)
         {
             User? user = await _context.Users.SingleOrDefaultAsync(
-                u => u.RefreshTokens.Any(t => t.Token == token));
+                u => _context.RefreshTokens.Any(t => t.Token == token));
 
             if (user == null)
             {
