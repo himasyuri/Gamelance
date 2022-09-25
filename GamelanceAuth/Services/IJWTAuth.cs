@@ -5,9 +5,9 @@ namespace GamelanceAuth.Services
 {
     public interface IJWTAuth
     {
-        Task<TokensResponse> GenerateTokens(User user, string device, string location);
+        Task<TokensResponse> GenerateTokens(User user, string userAgent);
 
-        Task<TokensResponse> UpdateTokens(string token, string device, string location);
+        Task<TokensResponse> UpdateTokens(string token, string userAgent);
 
         void RevokeToken(string token);
     }

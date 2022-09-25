@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace GamelanceAuth.Services
 {
@@ -23,7 +24,7 @@ namespace GamelanceAuth.Services
             _context = context;
         }
 
-        public async Task<TokensResponse> GenerateTokens(User user, string device, string location)
+        public async Task<TokensResponse> GenerateTokens(User user, string userAgent)
         {
             User? checkUser = await _context.Users.FindAsync(user.Id);
 
@@ -32,7 +33,7 @@ namespace GamelanceAuth.Services
                 RemoveOldRefreshTokens(checkUser);
             }
 
-            var refreshToken = CreateRefreshToken(device, location);
+            var refreshToken = CreateRefreshToken(userAgent);
             var accessToken = await CreateAccessToken(user);
 
             refreshToken.User = user;
@@ -50,25 +51,23 @@ namespace GamelanceAuth.Services
             return response;
         }
 
-        public async Task<TokensResponse> UpdateTokens(string token, string device, string location)
+        public async Task<TokensResponse> UpdateTokens(string token, string userAgent)
         {
 
             User user = await GetUserByRefreshToken(token);
             var refreshToken = _context.RefreshTokens.SingleOrDefault(t => t.Token == token);
 
-            //TODO: situation if token was compromissed
-            //if token was compromissed
-            //if (refreshToken.Device != device && refreshToken.Location != location)
-            //{
-            //    throw new Exception("Invalid token");
-            //}
+            if (!VerifyHash(userAgent, refreshToken.UserAgentHash))
+            {
+                throw new Exception("Invalid token");
+            }
 
             if (!refreshToken.IsActive)
             {
                 throw new Exception("Invalid token");
             }
 
-            var newRefreshToken = RotateRefreshToken(refreshToken);
+            var newRefreshToken = RotateRefreshToken(userAgent);
 
             newRefreshToken.User = user;
             _context.RefreshTokens.Add(newRefreshToken);
@@ -99,26 +98,25 @@ namespace GamelanceAuth.Services
             _context.SaveChanges();
         }
 
-        private RefreshToken CreateRefreshToken(string device, string location)
+        private RefreshToken CreateRefreshToken(string userAgent)
         {
             var authParams = _authOptions.Value;
 
-            RefreshToken token = new RefreshToken
+            RefreshToken resreshToken = new RefreshToken
             {
                 Token = CreateUniqueToken(),
-                Location = location,
-                Device = device,
+                UserAgentHash = Convert.ToString(GetHash(userAgent)),
                 Exspires = DateTime.Now.AddDays(authParams.RefreshTokenLifeTime),
             };
 
-            var tokenIsUnique = _context.Users.Any(u => u.RefreshTokens.Any(t => t.Token == token.Token));
+            var tokenIsUnique = _context.Users.Any(u => u.RefreshTokens.Any(t => t.Token == resreshToken.Token));
 
             if (tokenIsUnique)
             {
-                CreateRefreshToken(device, location);
+                CreateRefreshToken(userAgent);
             }
 
-            return token;
+            return resreshToken;
         }
 
         private async Task<string> CreateAccessToken(User user)
@@ -164,17 +162,41 @@ namespace GamelanceAuth.Services
             return user;
         }
 
-        private RefreshToken RotateRefreshToken(RefreshToken refreshToken)
+        private RefreshToken RotateRefreshToken(string userAgent)
         {
-            var newRefreshToken = CreateRefreshToken(refreshToken.Device, refreshToken.Location);
+            var newRefreshToken = CreateRefreshToken(userAgent);
 
             return newRefreshToken;
         }
 
-        private void RemoveOldRefreshTokens(User user)
+        private static void RemoveOldRefreshTokens(User user)
         {
             user.RefreshTokens.RemoveAll(p =>
             p.IsActive == false && p.IsExpired == true);
+        }
+
+        private static byte[] GetHash(string userAgent)
+        {
+            using (SHA256 alg = SHA256.Create())
+            {
+                var hash = alg.ComputeHash(Encoding.UTF8.GetBytes(userAgent));
+
+                return hash;
+            }
+        }
+
+        private static bool VerifyHash(string userAgent, string oldHash)
+        {
+            byte[] hash;
+
+            using (SHA256 alg = SHA256.Create())
+            {
+                hash = alg.ComputeHash(Encoding.UTF8.GetBytes(userAgent));
+
+                StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+
+                return comparer.Compare(oldHash, Convert.ToString(hash)) == 0;
+            }
         }
     }
 

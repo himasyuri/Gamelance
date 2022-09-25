@@ -12,9 +12,7 @@
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public string Device { get; set; } = string.Empty;
-
-        public string Location { get; set; } = string.Empty;
+        public string? UserAgentHash { get; set; }
 
         public bool IsExpired => DateTime.UtcNow >= Exspires;
 

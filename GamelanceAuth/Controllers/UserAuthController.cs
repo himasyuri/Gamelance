@@ -1,6 +1,5 @@
 ﻿using GamelanceAuth.Models.Dto;
 using GamelanceAuth.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GamelanceAuth.Controllers
@@ -20,36 +19,40 @@ namespace GamelanceAuth.Controllers
 
         [Route("Registration")]
         [HttpPost]
-        public async Task<IActionResult> Registration(UserRegisterRequest request, string device, string IpAddress)
+        public async Task<IActionResult> Registration(UserRegisterRequest request)
         {
             var result = await _authService.Register(request);
-            var token = await _jwt.GenerateTokens(result, device, IpAddress);
-            SetTokenCokkie(token.RefreshToken);
+            var token = await _jwt.GenerateTokens(result, GetUserAgent());
+            SetTokenCookie(token.RefreshToken);
 
             return Ok(token);
         }
 
         [Route("Login")]
         [HttpPost]
-        public async Task<IActionResult> Login(UserLoginRequest request, string device, string IpAddress)
+        public async Task<IActionResult> Login(UserLoginRequest request)
         {
             var result = await _authService.Login(request);
-            var token = await _jwt.GenerateTokens(result, device, IpAddress);
-            SetTokenCokkie(token.RefreshToken);
+            var token = await _jwt.GenerateTokens(result, GetUserAgent());
+            SetTokenCookie(token.RefreshToken);
 
             return Ok(token);
         }
 
         [Route("Update")]
         [HttpPost]
-        public async Task<IActionResult> RefreshTokens(string device)
+        public async Task<IActionResult> RefreshTokens()
         {
-            //Test data
-            //TODO: compute ipaddress and location may be
-            string IpAddress = "123.23";
+            var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
             var refreshToken = HttpContext.Request.Cookies["refreshToken"];
-            var token = await _jwt.UpdateTokens(refreshToken, device, IpAddress);
-            SetTokenCokkie(token.RefreshToken);
+
+            if (refreshToken == null)
+            {
+                throw new Exception("Invalid token");
+            }
+
+            var token = await _jwt.UpdateTokens(refreshToken, userAgent);
+            SetTokenCookie(token.RefreshToken);
 
             return Ok(token);
         }
@@ -59,6 +62,7 @@ namespace GamelanceAuth.Controllers
         public IActionResult Logout()
         {
             var refreshToken = HttpContext.Request.Cookies["refreshToken"];
+            DeleteTokenCookie();
             _jwt.RevokeToken(refreshToken);
 
             return Ok();
@@ -91,7 +95,7 @@ namespace GamelanceAuth.Controllers
             return Ok();
         }
 
-        private void SetTokenCokkie(string token)
+        private void SetTokenCookie(string token)
         {
             var cookieOptions = new CookieOptions
             {
@@ -100,6 +104,16 @@ namespace GamelanceAuth.Controllers
             };
 
             Response.Cookies.Append("refreshToken", token, cookieOptions);
+        }
+
+        private void DeleteTokenCookie()
+        {
+            Response.Cookies.Delete("refreshToken");
+        }
+
+        private string GetUserAgent()
+        {
+            return HttpContext.Request.Headers.UserAgent.ToString();
         }
 
     }
