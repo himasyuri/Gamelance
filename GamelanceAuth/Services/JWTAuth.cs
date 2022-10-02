@@ -127,7 +127,6 @@ namespace GamelanceAuth.Services
             var claims = new List<Claim>() {
                 new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString())
             };
-            claims.Add(new Claim("Username", user.UserName));
             var userRoles = await _roleManager.GetUserRolesAsync(user);
 
             foreach (var role in userRoles)
