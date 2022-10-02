@@ -3,7 +3,9 @@ using Gamelance.Models.SpecialResponses;
 using Gamelance.Models.Users;
 using Gamelance.Services;
 using Gamelance.Services.PagesServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Gamelance.Controllers
 {
@@ -11,12 +13,11 @@ namespace Gamelance.Controllers
     [ApiController]
     public class UserPagesController : ControllerBase
     {
-        private readonly IImageService _imageService;
         private readonly IUserPagesService _userPages;
+        private Guid UserId => Guid.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-        public UserPagesController(IImageService image, IUserPagesService user)
+        public UserPagesController(IUserPagesService user)
         {
-            _imageService = image;
             _userPages = user;
         }
 
@@ -42,7 +43,6 @@ namespace Gamelance.Controllers
         public async Task<ActionResult<UserPageResponse>> GetUserPage(Guid id)
         {
             var page = await _userPages.GetUserPageAsync(id);
-            //var image = _imageService.GetImage(page.Avatar.Path);
 
             if (page.OrganizationPage == null)
             {
@@ -61,7 +61,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -83,7 +82,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -91,10 +89,9 @@ namespace Gamelance.Controllers
         }
 
         [HttpPost("AddStatus")]
-        public async Task<ActionResult<UserPage>> AddStatus([FromBody] string status, Guid userId)
+        public async Task<ActionResult<UserPage>> AddStatus([FromBody] string status)
         {
-            var page = await _userPages.AddStatusAsync(status, userId);
-            var image = _imageService.GetImage(page.Avatar.Path);
+            var page = await _userPages.AddStatusAsync(status, UserId);
 
             if (page.OrganizationPage == null)
             {
@@ -113,7 +110,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -135,7 +131,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -143,10 +138,9 @@ namespace Gamelance.Controllers
         }
 
         [HttpPost("AddAbout")]
-        public async Task<ActionResult<UserPageResponse>> AddAbout([FromBody] string about, Guid userId)
+        public async Task<ActionResult<UserPageResponse>> AddAbout([FromBody] string about)
         {
-            var page = await _userPages.AddAboutAsync(about, userId);
-            var image = _imageService.GetImage(page.Avatar.Path);
+            var page = await _userPages.AddAboutAsync(about, UserId);
 
             if (page.OrganizationPage == null)
             {
@@ -165,7 +159,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -187,7 +180,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -195,10 +187,9 @@ namespace Gamelance.Controllers
         }
 
         [HttpPost("AddPhoto")]
-        public async Task<ActionResult<UserPageResponse>> AddPhoto([FromBody] IFormFile photo, Guid userId)
+        public async Task<ActionResult<UserPageResponse>> AddPhoto([FromBody] IFormFile photo)
         {
-            var page = await _userPages.AddPhotoAsync(photo, userId);
-            var image = _imageService.GetImage(page.Avatar.Path);
+            var page = await _userPages.AddPhotoAsync(photo, UserId);
             if (page.OrganizationPage == null)
             {
                 UserPageResponse response = new UserPageResponse()
@@ -216,7 +207,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -238,7 +228,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -246,11 +235,10 @@ namespace Gamelance.Controllers
         }
 
         // POST api/<UserPagesController>
-        [HttpPost("NewPage")]
-        public async Task<ActionResult<UserPageResponse>> CreateUserPage([FromBody] UserPageRegistration userPage, Guid userId)
+        [HttpPost("NewPage"), Authorize]
+        public async Task<ActionResult<UserPageResponse>> CreateUserPage([FromBody] UserPageRegistration userPage)
         {
-            var page = await _userPages.CreateUserPageAsync(userPage, userId);
-            //var image = _imageService.GetImage(page.Avatar.Path);
+            var page = await _userPages.CreateUserPageAsync(userPage, UserId);
 
             if (page.OrganizationPage == null)
             {
@@ -269,7 +257,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                   // ImageData= image
                 };
 
                 return Ok(response);
@@ -291,7 +278,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                   // ImageData= image
                 };
 
                 return Ok(response);
@@ -300,9 +286,9 @@ namespace Gamelance.Controllers
 
         // PUT api/<UserPagesController>/5
         [HttpPut("ChangeName/{id}")]
-        public async Task<ActionResult<UserPageResponse>> ChangeUserName(Guid id, [FromBody] string name)
+        public async Task<ActionResult<UserPageResponse>> ChangeUserName([FromBody] string name)
         {
-            var page = await _userPages.EditName(name, id);
+            var page = await _userPages.EditName(name, UserId);
 
             if (page.OrganizationPage == null)
             {
@@ -321,7 +307,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -343,7 +328,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -352,9 +336,9 @@ namespace Gamelance.Controllers
 
         // PUT api/<UserPagesController>/5
         [HttpPut("ChangeAbout/{id}")]
-        public async Task<ActionResult<UserPageResponse>> ChangeAbout(Guid id, [FromBody] string about)
+        public async Task<ActionResult<UserPageResponse>> ChangeAbout([FromBody] string about)
         {
-            var page = await _userPages.EditAbout(about, id);
+            var page = await _userPages.EditAbout(about, UserId);
 
             if (page.OrganizationPage == null)
             {
@@ -373,7 +357,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -395,7 +378,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -404,9 +386,9 @@ namespace Gamelance.Controllers
 
         // PUT api/<UserPagesController>/5
         [HttpPut("ChangeStatus/{id}")]
-        public async Task<ActionResult<UserPageResponse>> ChangeStatus(Guid id, [FromBody] string status)
+        public async Task<ActionResult<UserPageResponse>> ChangeStatus([FromBody] string status)
         {
-            var page = await _userPages.EditStatus(status, id);
+            var page = await _userPages.EditStatus(status, UserId);
 
             if (page.OrganizationPage == null)
             {
@@ -425,7 +407,6 @@ namespace Gamelance.Controllers
                     OrganizationName = "",
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
@@ -447,7 +428,6 @@ namespace Gamelance.Controllers
                     OrganizationName = page.OrganizationPage.OrganizationName,
                     UserPosts = page.UserPosts,
                     Reviews = page.Reviews,
-                    // ImageData= image
                 };
 
                 return Ok(response);
