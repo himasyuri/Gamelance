@@ -2,13 +2,14 @@
 using Gamelance.Models.Users;
 using Gamelance.Services.AppsService;
 using Gamelance.Services.PagesServices;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gamelance.Controllers.Admins
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "admin")]
     public class UserPagesAdminController : ControllerBase
     {
         private readonly IUserPagesService _userPages;
