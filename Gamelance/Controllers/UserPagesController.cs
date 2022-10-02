@@ -88,7 +88,7 @@ namespace Gamelance.Controllers
             }
         }
 
-        [HttpPost("AddStatus")]
+        [HttpPost("AddStatus"), Authorize]
         public async Task<ActionResult<UserPage>> AddStatus([FromBody] string status)
         {
             var page = await _userPages.AddStatusAsync(status, UserId);
@@ -137,7 +137,7 @@ namespace Gamelance.Controllers
             }
         }
 
-        [HttpPost("AddAbout")]
+        [HttpPost("AddAbout"), Authorize]
         public async Task<ActionResult<UserPageResponse>> AddAbout([FromBody] string about)
         {
             var page = await _userPages.AddAboutAsync(about, UserId);
@@ -186,7 +186,7 @@ namespace Gamelance.Controllers
             }
         }
 
-        [HttpPost("AddPhoto")]
+        [HttpPost("AddPhoto"), Authorize]
         public async Task<ActionResult<UserPageResponse>> AddPhoto([FromBody] IFormFile photo)
         {
             var page = await _userPages.AddPhotoAsync(photo, UserId);
@@ -285,7 +285,7 @@ namespace Gamelance.Controllers
         }
 
         // PUT api/<UserPagesController>/5
-        [HttpPut("ChangeName/{id}")]
+        [HttpPut("ChangeName/{id}"), Authorize]
         public async Task<ActionResult<UserPageResponse>> ChangeUserName([FromBody] string name)
         {
             var page = await _userPages.EditName(name, UserId);
@@ -335,7 +335,7 @@ namespace Gamelance.Controllers
         }
 
         // PUT api/<UserPagesController>/5
-        [HttpPut("ChangeAbout/{id}")]
+        [HttpPut("ChangeAbout/{id}"), Authorize]
         public async Task<ActionResult<UserPageResponse>> ChangeAbout([FromBody] string about)
         {
             var page = await _userPages.EditAbout(about, UserId);
@@ -385,7 +385,7 @@ namespace Gamelance.Controllers
         }
 
         // PUT api/<UserPagesController>/5
-        [HttpPut("ChangeStatus/{id}")]
+        [HttpPut("ChangeStatus/{id}"), Authorize]
         public async Task<ActionResult<UserPageResponse>> ChangeStatus([FromBody] string status)
         {
             var page = await _userPages.EditStatus(status, UserId);
@@ -435,13 +435,13 @@ namespace Gamelance.Controllers
         }
 
         // DELETE api/<UserPagesController>/5
-        [HttpDelete("DeleteUserPage/{id}")]
+        [HttpDelete("DeleteUserPage/{id}"), Authorize]
         public void DeleteUserPage(Guid userId)
         {
              _userPages.DeleteUserPageAsync(userId);
         }
 
-        [HttpDelete("DeleteUserPhoto/{id}")]
+        [HttpDelete("DeleteUserPhoto/{id}"), Authorize]
         public async Task<ActionResult<UserPage>> DeleteUserPhoto(Guid userId, Guid photoId)
         {
             var page = await _userPages.DeletePhotoAsync(photoId, userId);
