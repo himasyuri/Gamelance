@@ -18,15 +18,13 @@ builder.Services.AddSwaggerGen(config =>
     config.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Name = "Auth",
+        Name = "AuthServer",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
         Scheme = "bearer"
     });
 });
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 var authOptionsConfiguration = builder.Configuration.GetSection("Auth");
 builder.Services.Configure<AuthOptions>(authOptionsConfiguration);
 builder.Services.AddCors(options =>
